@@ -62,22 +62,25 @@ const userController = {
     }
     },
     changePassword: async(req, res, next)=>{
-     const {password, confirmPassword} = req.body
-     if(!!password && !!confirmPassword){
-        if(password !== confirmPassword){
-            res.json({status: "falied", message:"Password and Confirm Password should be same"})
-        }else{            
-            // console.log("password>>>>>>>>",password,confirmPassword)
-             const updatedUser = await User.findOneAndUpdate({_id: req.user._id}, password)
-             if(updatedUser){     
-                console.log("updateduser", updatedUser)           
-                 res.json({status: "success", message:"Password Changed Successfully!!"})
-             }else{
-                res.json({status: "Failure", message:"Something went wrong!!"})
-             }
+     try{
+        const {password, confirmPassword} = req.body
+        if(!password && !confirmPassword){
+            res.status(400).json({status: "falied", message:"All fiels are required"})   
         }
-    }else{
-        res.json({status: "falied", message:"All fiels are required"})    }
+        if(password !== confirmPassword){
+            res.status(400).json({status: "falied", message:"Password and Confirm Password should be same"})
+        }              
+        const updatedUser = await User.findOneAndUpdate({_id: req.user._id}, {
+            $set: {password: password}})
+        if(!updatedUser){  
+            res.status(404).json({status: "Failure", message:"User not found"})         
+        }
+            res.status(200).json({status: "success", message:"Password Changed Successfully!!"})                
+        
+     }catch(err){
+        return res.status(500).json({status: "failure", message:err.message})
+     }
+ 
     },
     logout : ()=>{}
 }

@@ -40,15 +40,15 @@ userSchema.pre('save', async function(next){
     if(!user.isModified('password')){
         return next()
     }
-    // this.plainPassword = this.password;
     this.password = bcrypt.hashSync(this.password, saltRounds);
     next();
 })
 
 userSchema.pre(["updateOne", "findByIdAndUpdate", "findOneAndUpdate"], async function (next) {
-    const data = this.getUpdate();
-    if (data.password) {
-        data.password = await bcrypt.hashSync(data.password, saltRounds);
+    let modifiedField = this.getUpdate()['$set'].password
+    if (modifiedField) {
+        let encryptedPassword = await bcrypt.hashSync(modifiedField, saltRounds);
+        this.getUpdate()['$set'].password = encryptedPassword;
     }
     next()
 
