@@ -7,7 +7,11 @@ const router = express.Router()
 router.post('/register', userController.register)
 router.post('/login', userController.login)
 
+
+
+
 //Protected Routes
 router.post('/changepassword',auth, userController.changePassword)
+router.get('/user',auth, userController.getUserDetails)
 
 export default router;

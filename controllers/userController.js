@@ -44,8 +44,7 @@ const userController = {
             return res.status(401).json({status:"failed", message:"User Not Found", data: {}})
         }
         const bcryptCompare = util.promisify(bcrypt.compare);
-        const result = bcryptCompare(password, user.password)
-
+        const result = await bcryptCompare(password, user.password)
         if(!result){
             return res.status(401).json({ status: "failed", message: "Email or Password does not match", data: {} });
         }
@@ -79,6 +78,20 @@ const userController = {
         return res.status(500).json({status: "failure", message:err.message})
      }
  
+    },
+    getUserDetails:async (req, res, next)=>{
+        try{
+            if(!req.body.id){
+                return res.status(400).json({status:"failed", message:"No user Id found"
+            })}
+            const user = await User.findById(req.body.id).select("-password")
+            if(!user){
+                return res.status(404).json({status:"failed", message:"User not found"})
+            }
+             return res.status(200).json({status:"success", message:"User found Successfully", data:user})
+        }catch(err){
+            next(err)
+        }
     },
     logout : ()=>{}
 }
