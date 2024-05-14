@@ -93,6 +93,63 @@ const userController = {
             next(err)
         }
     },
+    sendResetPasswordEmail: async(req, res, next)=>{
+        try{
+            const {email} = req.body
+            if(!email){
+                return res.status(400).json({status:"failed", message:"Please provide an  email"})
+            }
+            const user = await User.findOne({email: email})
+            if(!user){
+                return res.status(404).json({status:"failed", message:"No User Found"})
+            }
+            //generate token
+            const token = jwt.sign({userId: user._id}, req.app.get("secretKey"),{expiresIn:"15m"})
+            const link =  `${process.env.APP_URL}/user/reset/${user._id}/${token}`
+            return res.status(500).json({status:"success", message:"Email Sent!!..Check your inbox"})
+        }catch(err){
+            next(err)
+        }
+
+    },
+    resetPassword:async(req, res, next)=>{
+        try{
+            const {password, confirmPassword}=req.body
+        const {id, token}= req.params
+
+        if(!password || !confirmPassword){
+            return res.status(400).json({status:"failed", message:"All fields are required"})
+        }
+        if(password !== confirmPassword){
+            return res.status(400).json({status:"failed", message:"Password and Confirm Password should be same"})
+        }
+        if (password.length < 8) {
+            return res.status(400).json({ status: "failed", message: "Password should be at least 8 characters long" });
+        }
+        const user = await User.findById(id)
+        if(!user){
+            return res.status(404).json({status:"failed", message:"User not found"})  
+        }
+        const verifiedUser = await jwt.verify(token, req.app.get("secretKey"))
+        if(!verifiedUser || verifiedUser.userId !== user._id.toString()){
+            return res.status(404).json({status:"failed", message:"User is not verified"})
+        }
+        const updatedUser = await User.findByIdAndUpdate(id, {$set:{password:password}},{ new: true })
+        if(!updatedUser){
+        return res.status(500).json({status:"suceess", message:"Password not updated"})
+        }
+        return res.status(200).json({status:"suceess", message:"Password Changed Successfully!!"})
+        }catch(err){
+            if(err.name =="JsonWebTokenError"){
+                return res.status(404).json({status:"failed", message:err.message})   
+            }
+            if(err.name =="TokenExpiredError"){
+                return res.status(404).json({status:"failed",message:"Token is expired, Please login again"})
+            }
+            return res.status(404).json({status:"failed", message:"something went wrong"})   
+        }
+        
+    },
     logout : ()=>{}
 }
 

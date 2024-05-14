@@ -6,6 +6,10 @@ const router = express.Router()
 //Public Routes
 router.post('/register', userController.register)
 router.post('/login', userController.login)
+router.post('/send-reset-password-email', userController.sendResetPasswordEmail)
+router.post('/reset-password/:id/:token', userController.resetPassword)
+
+
 
 
 
