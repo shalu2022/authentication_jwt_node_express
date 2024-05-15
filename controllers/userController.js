@@ -2,6 +2,7 @@ import User from "../models/userModel.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import util from 'util'
+import sendEmail from "../utils/send-email-format.js";
 
 const userController = {
     register : async (req, res, next)=>{
@@ -106,7 +107,11 @@ const userController = {
             //generate token
             const token = jwt.sign({userId: user._id}, req.app.get("secretKey"),{expiresIn:"15m"})
             const link =  `${process.env.APP_URL}/user/reset/${user._id}/${token}`
-            return res.status(500).json({status:"success", message:"Email Sent!!..Check your inbox"})
+            //send email
+            const emailSent = await sendEmail(user.email,"Helloooo!!!","Hi there", `<p>Please click this button for password reset</p><br><Button><a href=${link}>Click Here</a></Button>`)
+            if(emailSent){
+                return res.status(500).json({status:"success", message:"Email Sent!!..Check your inbox"})
+            }           
         }catch(err){
             next(err)
         }
