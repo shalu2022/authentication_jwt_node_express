@@ -26,11 +26,11 @@ const userController = {
             if(!!user){
                 const token = jwt.sign({userId: user._id}, req.app.get('secretKey'), {expiresIn: '30m'})
                 user.password = undefined
-                if(token){                        
-                    return res.status(201).json({status: "success", message: "User Created Successfully", data: user, token: token})
+                if(token){ 
+                        return res.status(201).json({status: "success", message: "User Created Successfully", data: user, token: token})
                 }
             }
-        }catch(err){
+        }catch(err){        
             next(err)
         }
     },
@@ -106,7 +106,7 @@ const userController = {
             }
             //generate token
             const token = jwt.sign({userId: user._id}, req.app.get("secretKey"),{expiresIn:"15m"})
-            const link =  `${process.env.APP_URL}/user/reset/${user._id}/${token}`
+            const link =  `${process.env.APP_URL}/user/reset-password/${user._id}/${token}`
             //send email
             const emailSent = await sendEmail(user.email,"Helloooo!!!","Hi there", `<p>Please click this button for password reset</p><br><Button><a href=${link}>Click Here</a></Button>`)
             if(emailSent){
