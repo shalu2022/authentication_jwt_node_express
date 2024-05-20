@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 const Schema = mongoose.Schema
-const saltRounds = 10;
+const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 
 const userSchema = new Schema({
     firstName:{
