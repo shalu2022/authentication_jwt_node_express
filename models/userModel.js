@@ -30,6 +30,10 @@ const userSchema = new Schema({
     tc:{
         type: Boolean,
         required: true
+    },
+    emailVerified:{
+        type: Boolean,
+        default: false
     }
 },
 { timestamps: true }
