@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import util from 'util'
 import sendEmail from "../utils/send-email-format.js";
+import sendOTPverificationEmail from "../utils/send-otp-verification-email.js"
 
 const userController = {
     register : async (req, res, next)=>{
@@ -26,8 +27,14 @@ const userController = {
             if(!!user){
                 const token = jwt.sign({userId: user._id}, req.app.get('secretKey'), {expiresIn: '30m'})
                 user.password = undefined
+                console.log("yuerrr", user)
                 if(token){ 
+                    //commented fornow, for stopping unneccessary emails sending while deveploment
+                    // const sendOTPverified =  sendOTPverificationEmail({id:user._id, name:user.firstName, email:user.email})  
+                    
+                    // if(sendOTPverified){
                         return res.status(201).json({status: "success", message: "User Created Successfully", data: user, token: token})
+                    // }
                 }
             }
         }catch(err){        
