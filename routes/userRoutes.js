@@ -10,12 +10,9 @@ router.post('/send-reset-password-email', userController.sendResetPasswordEmail)
 router.post('/reset-password/:id/:token', userController.resetPassword)
 
 
-
-
-
-
 //Protected Routes
 router.post('/changepassword',auth, userController.changePassword)
 router.get('/user',auth, userController.getUserDetails)
+router.post('/verifyotp',auth, userController.verifyOTP)
 
 export default router;

@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import util from 'util'
 import sendEmail from "../utils/send-email-format.js";
-import sendOTPverificationEmail from "../utils/send-otp-verification-email.js"
+import EmailVerification from "../models/emailVerificationModel.js";
+import sendOTPverificationEmail from "../utils/send-otp-verification-email.js";
 
 const userController = {
     register : async (req, res, next)=>{
@@ -29,12 +30,11 @@ const userController = {
                 user.password = undefined
                 console.log("yuerrr", user)
                 if(token){ 
-                    //commented fornow, for stopping unneccessary emails sending while deveploment
-                    // const sendOTPverified =  sendOTPverificationEmail({id:user._id, name:user.firstName, email:user.email})  
+                    const sendOTPverified =  sendOTPverificationEmail({id:user._id, name:user.firstName, email:user.email})  
                     
-                    // if(sendOTPverified){
+                    if(sendOTPverified){
                         return res.status(201).json({status: "success", message: "User Created Successfully", data: user, token: token})
-                    // }
+                    }
                 }
             }
         }catch(err){        
@@ -161,6 +161,34 @@ const userController = {
             return res.status(404).json({status:"failed", message:"something went wrong"})   
         }
         
+    },
+    verifyOTP: async(req, res, next)=>{
+        try{
+            const {id, email, otp}= req.body
+            console.log("id", id, "email", email, "otp", otp)
+            if(!id || !email || !otp){
+                return res.status(400).json({status:"failed", message:"All fields are required"})  
+            }
+            const userDetails = await User.findById(id)
+            console.log("userDetails", userDetails)
+            if(userDetails && userDetails.emailVerified){
+                return res.status(404).json({status:"failed", message:"Account has already been verified"})  
+            }
+            const userOTPDetails = await EmailVerification.find({userId:id})
+            console.log("userOTPDetails>>>>>>>>>>.",userOTPDetails)
+
+            if(userOTPDetails.length <= 0){
+                return res.status(404).json({status:"failed", message:"Account does not exist or OTP has been expired. Please resend the OTP"})  
+            }
+        }catch(err){
+            if(err.name =="JsonWebTokenError"){
+                return res.status(404).json({status:"failed", message:err.message})   
+            }
+            if(err.name =="TokenExpiredError"){
+                return res.status(404).json({status:"failed",message:"Token is expired, Please login again"})
+            }
+            return res.status(404).json({status:"failed", message:"something went wrong"}) 
+        }
     },
     logout : ()=>{}
 }
